@@ -1,0 +1,7 @@
+python manage.py startapp posts
+python manage.py migrate
+python manage.py makemigrations
+
+/// for django shell
+python manage.py shell
+

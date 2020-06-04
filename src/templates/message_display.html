@@ -1,0 +1,9 @@
+ <div class="container">
+{%if messages %}
+      
+               {% for message in messages %}
+               <li {% if success %} class="{{ message.tags}}"{% endif %} >  <div class="alert alert-success" role="alert">{{ message.tags }}  </div></li>
+                {%endfor%}
+       
+      {%endif%}
+   </div>
