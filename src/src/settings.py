@@ -37,16 +37,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #third party
+    'crispy_forms',
+    'pagedown.apps.PagedownConfig',
+    'markdown_deux',
+    #local
+    'comments',
     'posts',
+    'account',
 ]
 
-MIDDLEWARE_CLASSES = [
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -122,8 +129,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS= [
-              os.path.join(BASE_DIR,"static"),
-               '/ Var / www / static /', 
+              os.path.join(BASE_DIR,""),
 ]
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR),"static_cdn")

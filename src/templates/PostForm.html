@@ -1,22 +1,36 @@
-{%extends "base.html" %}
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
 
-{%block content%}
-<div class="container">
-<div clas="row">
-<h1 style="text-align:center"> Create A New Blog </h1>
-<div style="width:30%; margin:0 auto;">
+{% block head_extra %} 
+{{ form.media }}
 
-<form method="post" action="" enctype="multipart/form-data">{% csrf_token %}
-	  <div class="form-group">
-        {{ form.as_p}}
+{% endblock head_extra %}
+
+
+
+{% block content %}
+<div class='col-sm-6'>
+<h1>Preview</h1>
+<hr/>
+<div class='content-preview'>
+    <h3 id='preview-title'></h3>
+    <p id='preview-content'></p>
+</div>
+</div>
+
+<div class='col-sm-6'>
+<h1>CREATE BLOG </h1>
+<hr/>
+
+<form method='POST' action='' enctype='multipart/form-data'>{% csrf_token %}
+{{ form|crispy }}
 <div class="form-group">
                <button class=" btn btn-lg btn-default btn-primary btn-block" required> Submit</button>
       </div>
 </form>
+
 <a href = "/posts">Go Back</a>
-</div>
-</div>
-</div>
+
 </div>
 
 {%endblock content %}

@@ -1,14 +1,19 @@
+
 from urllib.parse import quote_plus
 from django.contrib import messages
 from django.http import Http404
 import datetime 
 from django.http import HttpResponse,HttpResponseRedirect
+from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator,EmptyPage , PageNotAnInteger
 from django.shortcuts import render
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404,redirect
+from django.contrib.auth import get_user_model
 from .models import Post
 from .form import PostForm
+from comments.forms import CommentForm
+from comments.models import Comment
 
 
 # Create your views here.
@@ -59,7 +64,7 @@ def posts_create(request):
 	print(request.user.is_staff)
 	if not request.user.is_staff or not request.user.is_superuser:
 		raise Http404
-	if not request.user.is_authenticated():
+	if not request.user.is_authenticated:
 		raise Http404
 	form = PostForm(request.POST or None, request.FILES or None)
 	if form.is_valid():
@@ -100,23 +105,49 @@ def posts_detail(request,slug=None):
 		if not request.user.is_staff or not request.user.is_superuser:
 			raise Http404
 	share_string = quote_plus(instance.content)
+	
+	initial_data = {
+			"content_type": instance.get_content_type,
+			"object_id": instance.id
+	}
+	form = CommentForm(request.POST or None, initial=initial_data)
+	if form.is_valid() and request.user.is_authenticated:
+		c_type = form.cleaned_data.get("content_type")
+		c_type=c_type.split(' | ',1)
+		content_type = ContentType.objects.get(model=c_type[1])
+		obj_id = form.cleaned_data.get('object_id')
+		content_data = form.cleaned_data.get("content")
+		parent_obj = None
+		try:
+			parent_id = int(request.POST.get("parent_id"))
+		except:
+			parent_id = None
+
+		if parent_id:
+			parent_qs = Comment.objects.filter(id=parent_id)
+			if parent_qs.exists() and parent_qs.count() == 1:
+				parent_obj = parent_qs.first()
+
+
+		new_comment, created = Comment.objects.get_or_create(
+							user = request.user,
+							content_type= content_type,
+							object_id = obj_id,
+							content = content_data,
+							parent = parent_obj,
+						)
+		return HttpResponseRedirect(new_comment.content_object.get_absolute_url())
+
+	comments = instance.comments
 	context = {
 		"title": instance.title,
 		"instance": instance,
 		"share_string": share_string,
+		"comments": comments,
+		"comment_form":form,
 	}
+	print(comments)
 	return render(request, "post_detail.html", context)
-	# if request.user.is_authenticated():
- #            context = {
-	#                     "title":"detail"
-	# 	              }
- #            return render(request,"index.html",context)
-	# else:
- #    	    return HttpResponse("<h1> not logged in</h1>")
-
-
-
-
 
 
 
@@ -125,6 +156,7 @@ def posts_detail(request,slug=None):
 
 def posts_update(request,slug=None):
 	if not request.user.is_staff or not request.user.is_superuser:
+		messages.success(request,"successfully Updated")
 		raise Http404
 	instance=get_object_or_404(Post,slug=slug)
 	form = PostForm(request.POST or None,request.FILES or None,instance=instance)
@@ -155,7 +187,12 @@ def posts_delete(request,slug=None):
 	if not request.user.is_staff or not request.user.is_superuser:
 		raise Http404
 	instance=get_object_or_404(Post,slug=slug)
-	instance.delete()
-	messages.success(request,"successfully deleted")
-	return redirect("list")
-	
+	if request.method == "POST":
+		instance.delete()
+		messages.success(request,"successfully deleted")
+		return redirect("list")
+
+	context = {
+		"object": instance
+	}
+	return render(request, "confirm_delete.html", context)

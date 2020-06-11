@@ -1,5 +1,5 @@
 
-{% load staticfiles%}
+{% load static %}
 <!-- DOCTYPE HTML -->
 
 <html>
@@ -13,6 +13,8 @@
     <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 <link rel='stylesheet' href='{% static "/static/css/base.css" %}'/>
+
+<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' >
     <style >
         {% block style %}
 
@@ -30,6 +32,8 @@
         {% endblock style%}
 
     </style>
+    {%block head_extra %}{%endblock head_extra%}
+    
         
 </head>
 
@@ -45,21 +49,88 @@ fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>
 
     
-    <nav class="navbar navbar-default">
-    <div class= "container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand " href="/posts/">Blogs</a>
-        </div>
-    </div>
-</nav>
+    <div class='container'> 
+    <ol class='breadcrumb'>
+        <li><a href='/posts'>Home</a></li>
+        {% block post_detail_link %}
+        {% endblock %}
+
+        {% if not request.user.is_authenticated %}
+        <li class='pull-right'><a href='{% url "register" %}'>Register</a></li>
+        <li class='pull-right'><a href='{% url "login" %}'>Login</a></li>
+        {% else %}
+        <li class='pull-right'><a href='{% url "logout" %}'>Logout</a></li>
+        {% endif %}
+    </ol>
+{% block content %}{% endblock content %}
+</div>
       {%include "message_display.html"%}
 
     <div class="container">
           
-     {%block content%}
-     {%endblock content%}
+    
+     
     </div>
-	
+<script   src="http://code.jquery.com/jquery-1.12.2.min.js"   integrity="sha256-lZFHibXzMHo3GGeehn1hudTAP3Sc0uKXBXAzHX1sjtk="   crossorigin="anonymous"></script>
+
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js'></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".content-markdown").each(function(){
+            var content = $(this).text()
+            var markedContent = marked(content)
+            $(this).html(markedContent)
+    })
+    $(".post-detail-item img").each(function(){
+            $(this).addClass("img-responsive");
+    })
+
+    
+
+    var contentInput = $("#wmd-input-id_content");
+
+    function setContent(value){
+        var markedContent = marked(value||"")
+        $("#preview-content").html(markedContent)
+        $("#preview-content img").each(function(){
+            $(this).addClass("img-responsive")
+        })
+    }
+    setContent(contentInput.val())
+
+    contentInput.keyup(function(){
+        var newContent = $(this).val()
+        setContent(newContent)
+    })
+
+    var titleInput = $("#id_title");
+    
+
+
+    function setTitle(value) {
+        $("#preview-title").text(value)
+    }
+    setTitle(titleInput.val())
+
+    titleInput.keyup(function(){
+        var newContent = $(this).val()
+        setTitle(newContent)
+    })
+
+  $(".comment-reply-btn").click(function(event){
+        event.preventDefault();
+        $(this).parent().next(".comment-reply").fadeToggle();
+    })
+
+
+    // preview-title
+    // preview-content
+
+})
+
+</script>
 
 </body>
 </html>
